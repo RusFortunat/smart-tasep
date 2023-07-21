@@ -2,6 +2,8 @@
 // Author: Ruslan Mukhamadiarov
 #include <iostream>
 #include <random>
+#include <vector>
+#include <string>
 #include "Environment.h"
 using namespace std;
 
@@ -12,7 +14,7 @@ uniform_int_distribution<int> Dir{ 0, 3 }; // Choose hop direction
 uniform_real_distribution<double> Rand{ 0.0, 1.0 }; // just a dice from 0 to 1
 
 // constructor
-Environment::Environment(int Lx, int Ly, int N, double av_speed, double speed_var){
+Environment::Environment(int Lx, int Ly, int N, double av_speed, double speed_var, vector<double> &RecordRates){
 	_Lx = Lx;
 	_Ly = Ly;
 	_N = N;
@@ -33,6 +35,7 @@ Environment::Environment(int Lx, int Ly, int N, double av_speed, double speed_va
 		double pick_hopping_rate = speed(RNG); // distribute particles hopping rates forward
 		if(pick_hopping_rate < 0) pick_hopping_rate = 0;
 		Particles[i][1] = pick_hopping_rate;
+		RecordRates.push_back(pick_hopping_rate);
 	}
 
 	// randomly distribute particles over the lattice
@@ -72,8 +75,16 @@ Environment::~Environment(){
 	delete[] Particles;
 }
 
-// update particles positions
-void Environment::update(int &par_hops, int &perp_hops){	
+void Environment::update(int &par_hops, int &perp_hops, vector<vector<string>> &RecordPositions){	
+	// record positions
+	vector<string> row;
+	for(auto n = 0; n < _N; n++){
+		string element = to_string(Particles[n][0]);
+		row.push_back(element);
+		//row.push_back(',');
+	}
+	RecordPositions.push_back(row);
+	// update them
 	for (int moveAttempt = 0; moveAttempt < _N; moveAttempt++) {
 		int pick_particle = int((_N-1)*Rand(RNG)); // Picks the random particle
 		int X = int(Particles[pick_particle][0]) / _Ly; // decode particle's position 
